@@ -1,0 +1,138 @@
+{
+  "ticker": "TSLA",
+  "companyName": "Tesla, Inc.",
+  "fetchedAt": "2024-04-15T10:00:00.000Z",
+  "quote": {
+    "currentPrice": 171.05,
+    "previousClose": 174.60,
+    "open": 172.80,
+    "dayHigh": 175.20,
+    "dayLow": 169.30,
+    "fiftyTwoWeekHigh": 299.29,
+    "fiftyTwoWeekLow": 138.80,
+    "marketCap": 543900000000,
+    "volume": 98432000,
+    "averageVolume": 104000000,
+    "beta": 2.34,
+    "trailingPE": 41.1,
+    "forwardPE": 57.4,
+    "priceToSalesTrailing12Months": 5.6,
+    "enterpriseToRevenue": 5.4,
+    "enterpriseToEbitda": 32.1,
+    "shortPercentOfFloat": 0.031,
+    "heldPercentInstitutions": 0.44,
+    "currency": "USD",
+    "exchange": "NASDAQ"
+  },
+  "financials": {
+    "totalRevenue": 97690000000,
+    "revenueGrowthYoY": 0.009,
+    "revenueGrowthQoQ": -0.013,
+    "grossMargins": 0.178,
+    "operatingMargins": 0.055,
+    "netMargins": 0.074,
+    "freeCashflow": 1370000000,
+    "operatingCashflow": 13300000000,
+    "totalCash": 26900000000,
+    "totalDebt": 7560000000,
+    "debtToEquity": 17.1,
+    "researchAndDevelopment": 3970000000,
+    "rdAsPercentRevenue": 0.041,
+    "capitalExpenditures": -8900000000,
+    "capexAsPercentRevenue": 0.091,
+    "enterpriseValue": 528000000000,
+    "ebitda": 16500000000
+  },
+  "evMetrics": {
+    "quarterlyDeliveries": 386810,
+    "deliveryGrowthYoY": -0.087,
+    "quarterlyProduction": 433371,
+    "productionDeliveryGap": 46561,
+    "averageSellingPrice": 42190,
+    "chargingNetworkSize": 50000,
+    "orderBacklog": null,
+    "batteryCapacitykWh": null
+  },
+  "macro": {
+    "competitors": [
+      {
+        "ticker": "RIVN",
+        "companyName": "Rivian Automotive",
+        "marketCap": 14200000000,
+        "peRatio": null,
+        "revenueGrowth": 0.71,
+        "grossMargin": -0.241,
+        "evToRevenue": 2.1
+      },
+      {
+        "ticker": "LCID",
+        "companyName": "Lucid Group",
+        "marketCap": 7100000000,
+        "peRatio": null,
+        "revenueGrowth": 0.21,
+        "grossMargin": -1.32,
+        "evToRevenue": 3.4
+      },
+      {
+        "ticker": "NIO",
+        "companyName": "NIO Inc.",
+        "marketCap": 9800000000,
+        "peRatio": null,
+        "revenueGrowth": 0.36,
+        "grossMargin": 0.098,
+        "evToRevenue": 1.1
+      }
+    ],
+    "lithiumPrice": "~$13,000/tonne (Li carbonate, 2024 avg)",
+    "cobaltPrice": "~$25,000/tonne (LME spot)",
+    "nickelPrice": "~$17,000/tonne (LME spot)",
+    "evPolicyNotes": "US IRA EV tax credits ($7,500 new / $4,000 used) remain in effect. EU fleet emissions mandate targets 100% ZEV sales by 2035. China NEV subsidies extended through 2025.",
+    "globalEvMarketShare": "Tesla ~18% global EV market share (2023); declining from ~25% in 2021"
+  },
+  "sentiment": {
+    "recentNews": [
+      {
+        "title": "Tesla Q1 2024 deliveries miss estimates badly — worst in 4 years",
+        "publishedAt": "2024-04-02T00:00:00Z",
+        "source": "Reuters",
+        "url": ""
+      },
+      {
+        "title": "Tesla cuts prices globally amid slowing EV demand",
+        "publishedAt": "2024-03-22T00:00:00Z",
+        "source": "Bloomberg",
+        "url": ""
+      },
+      {
+        "title": "Elon Musk visits China for FSD approval talks",
+        "publishedAt": "2024-04-28T00:00:00Z",
+        "source": "WSJ",
+        "url": ""
+      },
+      {
+        "title": "Tesla lays off over 10% of global workforce",
+        "publishedAt": "2024-04-15T00:00:00Z",
+        "source": "CNBC",
+        "url": ""
+      },
+      {
+        "title": "Tesla energy storage business hits record 4.1 GWh in Q1",
+        "publishedAt": "2024-04-02T00:00:00Z",
+        "source": "Electrek",
+        "url": ""
+      }
+    ],
+    "analystBuyCount": 18,
+    "analystHoldCount": 12,
+    "analystSellCount": 8,
+    "consensusPriceTarget": 202.45,
+    "currentPriceVsTarget": 0.184,
+    "shortInterestRatio": 3.2,
+    "insiderTransactionsSummary": "Elon Musk sold approximately $3.6B in TSLA stock in Q4 2023. No significant insider buys disclosed in last 90 days."
+  },
+  "longDescription": "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, energy generation and storage systems, and related services in the United States, China, and internationally. The company operates in two segments, Automotive, and Energy Generation and Storage. The Automotive segment offers electric vehicles, as well as sells automotive regulatory credits; and non-warranty after-sales vehicle, used vehicles, body shop and parts, paid Supercharging, vehicle insurance, and retail merchandise services. The Energy Generation and Storage segment engages in the design, manufacture, installation, sale, and leasing of solar energy generation and energy storage products, and related services to residential, commercial, and industrial customers and utilities through its website, stores, and galleries.",
+  "sector": "Consumer Cyclical",
+  "industry": "Auto Manufacturers",
+  "country": "United States",
+  "dataGaps": []
+}
