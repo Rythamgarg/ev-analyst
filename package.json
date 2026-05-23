@@ -11,7 +11,27 @@
     "build": "tsc",
     "start": "node dist/cli.js",
     "dev": "ts-node src/cli.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "jest"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "extensionsToTreatAsEsm": [],
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", {
+        "useESM": false,
+        "tsconfig": {
+          "module": "CommonJS",
+          "moduleResolution": "node"
+        }
+      }]
+    },
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "testMatch": ["**/tests/**/*.test.ts"],
+    "collectCoverageFrom": ["src/**/*.ts"]
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.52.0",
@@ -24,8 +44,11 @@
     "yahoo-finance2": "^2.11.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.0.0",
     "@types/uuid": "^10.0.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3"
   },
