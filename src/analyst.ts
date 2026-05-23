@@ -106,9 +106,9 @@ PEER COMPARISON
 ${peersBlock || '  No peer data available'}
 
 MACRO CONTEXT
-  Lithium Price:      ${m.lithiumPrice}
-  Cobalt Price:       ${m.cobaltPrice}
-  Nickel Price:       ${m.nickelPrice}
+  Lithium Price:      ${m.lithiumPrice}${m.estimatedCommodityPrices ? ' (estimated — stale fallback)' : ''}
+  Cobalt Price:       ${m.cobaltPrice}${m.estimatedCommodityPrices ? ' (estimated — stale fallback)' : ''}
+  Nickel Price:       ${m.nickelPrice}${m.estimatedCommodityPrices ? ' (estimated — stale fallback)' : ''}
   EV Policy:          ${m.evPolicyNotes}
   Market Share:       ${m.globalEvMarketShare}
 
@@ -300,7 +300,7 @@ export async function runAnalystAgent(
   const context = buildDataContext(data);
   const userPrompt = ANALYST_USER_PROMPT(data.ticker, context);
 
-  logVerbose('Calling Analyst Agent (Claude claude-sonnet-4-20250514)...', opts.verbose);
+  logVerbose('Calling Analyst Agent (Claude claude-sonnet-4-6)...', opts.verbose);
 
   let fullText = '';
 
@@ -310,7 +310,7 @@ export async function runAnalystAgent(
       console.log('\n[Analyst Agent — streaming response]\n');
 
       const stream = client.messages.stream({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 4096,
         system: ANALYST_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }],
@@ -326,7 +326,7 @@ export async function runAnalystAgent(
     } else {
       const message = await withRetry(
         () => client.messages.create({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 4096,
           system: ANALYST_SYSTEM_PROMPT,
           messages: [{ role: 'user', content: userPrompt }],

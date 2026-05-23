@@ -236,15 +236,22 @@ async function fetchCompetitors(ticker: string): Promise<CompetitorData[]> {
 
   for (const peer of peers) {
     try {
-      const q = await withRetry(() => yfQuote(peer), 2, 1000, `peer/${peer}`);
+      const [q, summary] = await Promise.allSettled([
+        withRetry(() => yfQuote(peer), 2, 1000, `peer/${peer}`),
+        withRetry(() => yfSummary(peer, ['financialData']), 2, 1000, `peer-fin/${peer}`),
+      ]);
+
+      const quote = q.status === 'fulfilled' ? q.value : null;
+      const fin = summary.status === 'fulfilled' ? (summary.value?.financialData ?? {}) : {};
+
       results.push({
         ticker: peer,
-        companyName: q.shortName ?? peer,
-        marketCap: q.marketCap ?? null,
-        peRatio: q.trailingPE ?? null,
-        revenueGrowth: null,
-        grossMargin: null,
-        evToRevenue: q.enterpriseToRevenue ?? q.priceToSalesTrailing12Months ?? null,
+        companyName: quote?.shortName ?? peer,
+        marketCap: quote?.marketCap ?? null,
+        peRatio: quote?.trailingPE ?? null,
+        revenueGrowth: fin.revenueGrowth?.raw ?? null,
+        grossMargin: fin.grossMargins?.raw ?? null,
+        evToRevenue: quote?.enterpriseToRevenue ?? quote?.priceToSalesTrailing12Months ?? null,
       });
     } catch {
       logWarn(`Could not fetch data for peer ${peer}`);
@@ -255,28 +262,85 @@ async function fetchCompetitors(ticker: string): Promise<CompetitorData[]> {
   return results;
 }
 
-// ── EV-specific metrics (from public earnings data) ───────────────────────────
+// ── EV-specific metrics (from Yahoo Finance key stats / earnings — best effort) ──
 
-function buildEVMetrics(ticker: string): EVOperatingMetrics {
-  const known: Record<string, { q: number; yoy: number }> = {
-    TSLA: { q: 386810, yoy: -0.087 },
-    RIVN: { q: 13588, yoy: 0.71 },
-    LCID: { q: 2394, yoy: 0.21 },
-    NIO: { q: 55085, yoy: 0.37 },
-    XPEV: { q: 94008, yoy: 1.64 },
-    LI: { q: 152831, yoy: 0.33 },
-  };
-  const d = known[ticker];
-  return {
-    quarterlyDeliveries: d?.q ?? null,
-    deliveryGrowthYoY: d?.yoy ?? null,
-    quarterlyProduction: d ? Math.round(d.q * 1.12) : null,
-    productionDeliveryGap: d ? Math.round(d.q * 0.12) : null,
+async function buildEVMetrics(ticker: string): Promise<EVOperatingMetrics & { dataNote?: string }> {
+  // EV operating metrics (deliveries, production) are not available via
+  // standard Yahoo Finance API endpoints. Attempt to fetch any proxy data
+  // from key stats; if unavailable, return null with a note rather than
+  // fabricating numbers.
+  const base: EVOperatingMetrics & { dataNote?: string } = {
+    quarterlyDeliveries: null,
+    deliveryGrowthYoY: null,
+    quarterlyProduction: null,
+    productionDeliveryGap: null,
     averageSellingPrice: null,
-    chargingNetworkSize: ticker === 'TSLA' ? 50000 : null,
+    chargingNetworkSize: null,
     orderBacklog: null,
     batteryCapacitykWh: null,
+    dataNote: 'EV operating metrics unavailable via public API — check company IR page',
   };
+
+  try {
+    // Yahoo Finance does not expose delivery/production figures via its public
+    // API endpoints. We fetch defaultKeyStatistics as a best-effort attempt
+    // for any proxy metrics, but we do NOT fabricate delivery numbers.
+    await withRetry(
+      () => yfSummary(ticker, ['defaultKeyStatistics']),
+      2, 1000, `evMetrics/${ticker}`
+    );
+    // No delivery data is available from Yahoo Finance's public API.
+    // Return base with null metrics and the dataNote.
+  } catch {
+    // Silently fall through — return base with all nulls.
+  }
+
+  return base;
+}
+
+// ── Live commodity price fetch ────────────────────────────────────────────────
+
+async function fetchCommodityPrices(): Promise<{
+  lithiumPrice: string;
+  cobaltPrice: string;
+  nickelPrice: string;
+  estimatedCommodityPrices: boolean;
+}> {
+  // Fallback values — used when live fetch fails
+  const fallback = {
+    lithiumPrice: '~$13,000/tonne (estimated)',
+    cobaltPrice: '~$25,000/tonne (estimated)',
+    nickelPrice: '~$17,000/tonne (estimated)',
+    estimatedCommodityPrices: true,
+  };
+
+  try {
+    // Attempt to fetch nickel futures (NI=F) and lithium proxy (LTHM stock price)
+    // Cobalt does not have a liquid US-listed futures contract; use fallback.
+    const [niRes, lthmRes] = await Promise.allSettled([
+      withRetry(() => yfQuote('NI=F'), 2, 1000, 'nickel-futures'),
+      withRetry(() => yfQuote('LTHM'), 2, 1000, 'lithium-proxy'),
+    ]);
+
+    const nickelPrice = niRes.status === 'fulfilled' && niRes.value?.regularMarketPrice
+      ? `$${Number(niRes.value.regularMarketPrice).toLocaleString()}/tonne (live NI=F)`
+      : fallback.nickelPrice;
+
+    // LTHM is Livent Corp (lithium producer) — use as directional proxy, note it's a stock
+    const lithiumPrice = lthmRes.status === 'fulfilled' && lthmRes.value?.regularMarketPrice
+      ? `LTHM stock $${Number(lthmRes.value.regularMarketPrice).toFixed(2)}/share (proxy; spot ~$13,000/tonne estimated)`
+      : fallback.lithiumPrice;
+
+    // Cobalt: no reliable public futures ticker — always use fallback
+    const cobaltPrice = fallback.cobaltPrice;
+
+    const estimatedCommodityPrices =
+      niRes.status !== 'fulfilled' || lthmRes.status !== 'fulfilled';
+
+    return { lithiumPrice, cobaltPrice, nickelPrice, estimatedCommodityPrices };
+  } catch {
+    return fallback;
+  }
 }
 
 // ── Load fixture (dry-run) ────────────────────────────────────────────────────
@@ -363,11 +427,13 @@ export async function fetchAllData(
 
   const dataGaps: string[] = [];
 
-  const [quoteRes, finRes, sentRes, peerRes] = await Promise.allSettled([
+  const [quoteRes, finRes, sentRes, peerRes, evMetricsRes, commodityRes] = await Promise.allSettled([
     fetchQuote(ticker),
     fetchFinancials(ticker),
     fetchSentiment(ticker),
     fetchCompetitors(ticker),
+    buildEVMetrics(ticker),
+    fetchCommodityPrices(),
   ]);
 
   const emptyQuote: StockQuote = {
@@ -384,6 +450,20 @@ export async function fetchAllData(
   const competitors = peerRes.status === 'fulfilled' ? peerRes.value : [];
   if (peerRes.status === 'rejected') dataGaps.push('Peer data unavailable');
 
+  const evMetrics = evMetricsRes.status === 'fulfilled' ? evMetricsRes.value : {
+    quarterlyDeliveries: null, deliveryGrowthYoY: null, quarterlyProduction: null,
+    productionDeliveryGap: null, averageSellingPrice: null, chargingNetworkSize: null,
+    orderBacklog: null, batteryCapacitykWh: null,
+    dataNote: 'EV operating metrics unavailable via public API — check company IR page',
+  };
+
+  const commodity = commodityRes.status === 'fulfilled' ? commodityRes.value : {
+    lithiumPrice: '~$13,000/tonne (estimated)',
+    cobaltPrice: '~$25,000/tonne (estimated)',
+    nickelPrice: '~$17,000/tonne (estimated)',
+    estimatedCommodityPrices: true,
+  };
+
   const sourceCount = [quoteRes, finRes, sentRes, peerRes].filter(r => r.status === 'fulfilled').length;
   spinner.succeed(`Market data fetched — ${sourceCount}/4 sources successful`);
   dataGaps.forEach(g => logWarn(`Data gap: ${g}`));
@@ -394,8 +474,16 @@ export async function fetchAllData(
     fetchedAt: isoNow(),
     quote,
     financials: finData.fin,
-    evMetrics: buildEVMetrics(ticker),
-    macro: { competitors, lithiumPrice: 'ESTIMATED ~$13,000/tonne', cobaltPrice: 'ESTIMATED ~$25,000/tonne', nickelPrice: 'ESTIMATED ~$17,000/tonne', evPolicyNotes: 'US IRA EV tax credits ($7,500 new / $4,000 used) remain active. EU fleet mandate targets 100% ZEV by 2035. China NEV subsidies extended through 2025.', globalEvMarketShare: 'ESTIMATED ~18% global penetration rate (2024)' },
+    evMetrics,
+    macro: {
+      competitors,
+      lithiumPrice: commodity.lithiumPrice,
+      cobaltPrice: commodity.cobaltPrice,
+      nickelPrice: commodity.nickelPrice,
+      estimatedCommodityPrices: commodity.estimatedCommodityPrices,
+      evPolicyNotes: 'US IRA EV tax credits ($7,500 new / $4,000 used) remain active. EU fleet mandate targets 100% ZEV by 2035. China NEV subsidies extended through 2025.',
+      globalEvMarketShare: 'ESTIMATED ~18% global penetration rate (2024)',
+    },
     sentiment,
     longDescription: finData.desc,
     sector: finData.sector,

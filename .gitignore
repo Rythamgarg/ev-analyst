@@ -3,5 +3,6 @@ dist/
 .env
 *.log
 ev_analyst_log_*.json
+logs/
 *.html
 !fixtures/

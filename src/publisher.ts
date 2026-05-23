@@ -32,8 +32,12 @@ export async function publishReport(
   }
 
   // ── JSON log ───────────────────────────────────────────────────────────────
+  const logsDir = path.resolve(process.cwd(), 'logs');
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
   const logFileName = `ev_analyst_log_${report.ticker}_${dateStr()}.json`;
-  const logFilePath = path.resolve(logFileName);
+  const logFilePath = path.join(logsDir, logFileName);
 
   const logEntry: PublishLog = {
     reportId: report.reportId,

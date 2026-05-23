@@ -42,7 +42,7 @@ export function formatTerminalReport(
   console.log(chalk.bold.cyan('  EV EQUITY RESEARCH REPORT'));
   console.log(chalk.cyan(`  ${report.companyName} (${report.ticker})  ·  ${report.generatedAt.slice(0, 19).replace('T', ' ')} UTC`));
   console.log(chalk.dim(`  Report ID: ${report.reportId}`));
-  console.log(chalk.dim('  Powered by Claude claude-sonnet-4-20250514 Multi-Agent System'));
+  console.log(chalk.dim('  Powered by Claude claude-sonnet-4-6 Multi-Agent System'));
   printDivider('═', w);
 
   // ── Verifier banner ────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ export function formatTerminalReport(
     '  DISCLAIMER: This report is AI-generated for informational purposes only.\n' +
     '  It does not constitute licensed financial advice. Always consult a qualified\n' +
     '  financial advisor before making investment decisions.\n' +
-    '  Data sources: Yahoo Finance · Alpha Vantage · SEC EDGAR · Claude claude-sonnet-4-20250514'
+    '  Data sources: Yahoo Finance · Alpha Vantage · SEC EDGAR · Claude claude-sonnet-4-6'
   ));
   printDivider('═', w);
 }
@@ -324,7 +324,7 @@ export function generateHTMLReport(
       <div class="meta">
         Generated: ${esc(report.generatedAt.replace('T', ' ').slice(0, 19))} UTC
         &nbsp;·&nbsp; Report ID: ${esc(report.reportId)}
-        &nbsp;·&nbsp; Powered by Claude claude-sonnet-4-20250514 Multi-Agent System
+        &nbsp;·&nbsp; Powered by Claude claude-sonnet-4-6 Multi-Agent System
       </div>
     </header>
 
@@ -430,7 +430,7 @@ export function generateHTMLReport(
       <h2>Data Sources &amp; Caveats</h2>
       <ul>
         <li>Market data: Yahoo Finance (yfinance/yahoo-finance2) — fetched at ${esc(data.fetchedAt)}</li>
-        <li>Analysis: Claude claude-sonnet-4-20250514 (Analyst Agent + Verifier Agent)</li>
+        <li>Analysis: Claude claude-sonnet-4-6 (Analyst Agent + Verifier Agent)</li>
         <li>EV metrics: Publicly disclosed earnings data (may be approximate)</li>
         <li>Macro context: Estimated values — verify with current sources</li>
         ${data.dataGaps.length > 0 ? data.dataGaps.map(g => `<li><strong>Data gap:</strong> ${esc(g)}</li>`).join('') : ''}

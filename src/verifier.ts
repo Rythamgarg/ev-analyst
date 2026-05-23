@@ -153,7 +153,7 @@ export async function runVerifierAgent(
       console.log('\n[Verifier Agent — streaming response]\n');
 
       const stream = client.messages.stream({
-        model: 'claude-sonnet-4-5',
+        model: 'claude-sonnet-4-6',
         max_tokens: 2048,
         system: VERIFIER_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userPrompt }],
@@ -169,7 +169,7 @@ export async function runVerifierAgent(
     } else {
       const message = await withRetry(
         () => client.messages.create({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 2048,
           system: VERIFIER_SYSTEM_PROMPT,
           messages: [{ role: 'user', content: userPrompt }],

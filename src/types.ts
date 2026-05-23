@@ -91,6 +91,7 @@ export interface MacroContext {
   lithiumPrice: string;
   cobaltPrice: string;
   nickelPrice: string;
+  estimatedCommodityPrices?: boolean;
   evPolicyNotes: string;
   globalEvMarketShare: string;
 }

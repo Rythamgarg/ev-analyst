@@ -84,7 +84,7 @@ export async function validateEVCompany(
         logVerbose(`Calling Claude validator for ${ticker}`, opts.verbose);
 
         const message = await client.messages.create({
-          model: 'claude-sonnet-4-5',
+          model: 'claude-sonnet-4-6',
           max_tokens: 256,
           system: VALIDATOR_SYSTEM_PROMPT,
           messages: [
